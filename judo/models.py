@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2020 David Lenwell, Judo Security inc
 
@@ -14,5 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+from collections import namedtuple
 
-# import pytest
+Request = namedtuple("Request", ["url", "method", "params", "body", "headers", "timeout", "kwargs"])
+Response = namedtuple("Response", ["url", "method", "body", "headers", "status_code", "client_response"])

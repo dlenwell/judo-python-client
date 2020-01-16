@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Copyright 2020 David Lenwell, Judo Security inc
 
@@ -14,5 +13,35 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+class ActionNotFound(Exception):
+    pass
 
-# import pytest
+
+class ActionURLMatchError(Exception):
+    pass
+
+
+class ClientConnectionError(Exception):
+    pass
+
+
+class ErrorWithResponse(Exception):
+    def __init__(self, message, response):
+        self.message = message
+        self.response = response
+
+
+class ClientError(ErrorWithResponse):
+    pass
+
+
+class AuthError(ClientError):
+    pass
+
+
+class NotFoundError(ClientError):
+    pass
+
+
+class ServerError(ErrorWithResponse):
+    pass

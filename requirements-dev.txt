@@ -1,0 +1,14 @@
+-r requirements.txt
+Sphinx
+asynctest
+black
+codecov
+flake8
+isort
+pre-commit
+pytest
+pytest-asyncio
+pytest-cov
+pytest-httpserver
+twine
+wheel
