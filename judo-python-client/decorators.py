@@ -36,6 +36,22 @@ def validate_response(response):
         raise ServerError("operation=server_error," + error_suffix, response)
 
 
+def validate_input(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        try:
+            response = f(*args, **kwargs)
+        except (exceptions.TimeoutException,) as exc:
+            logger.exception(exc)
+            raise ClientConnectionError() from exc
+
+        validate_response(response)
+
+        return response
+
+    return wrapper
+    
+
 def handle_request_error(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
