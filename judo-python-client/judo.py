@@ -14,19 +14,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+import json
+from base64 import b64encode
+from judo_api import JudoApi
+from chop import Chop
+from judofile import JudoFile
 """
 judo.py
 
 imoprtable api wrapper object.
 
 """
-import os
-import sys
-import logging
-import json
-from base64 import b64encode
-from judo_api import JudoApi
-from aes256gcm import aes256gcm
 
 
 class Judo():
@@ -59,7 +57,6 @@ class Judo():
     def api_url(self, value):
         self._api_url = value
 
-
     @property
     def output_path(self):
         return self._output_path
@@ -68,10 +65,9 @@ class Judo():
     def output_path(self, value):
         self._output_path = value
 
-
-    def __init__(self, CONFIG=None, organization_id=None,
-                 storage_key=None, api_url=None):
-        """
+    def __init__(self, CONFIG=None, organization_id=None, storage_key=None,
+                 api_url=None):
+        """init function
         """
         if CONFIG:
             self.organization_id = CONFIG['organizationId']
@@ -85,53 +81,54 @@ class Judo():
             if api_url:
                 self.api_url = api_url
 
-        self.init_api()
-
+        if self.organization_id and self.api_url and self.storage_key:
+            self.init_api()
 
     def init_api(self):
-        if self.organization_id and self.api_url and self.storage_key:
-            return(JudoApi(
-                organization_id=self.organization_id ,
-                storage_key=self.storage_key,
-                root_url=self.api_url
-            ))
-        else:
-            return(False)
-
+        """connect to the judo api
+        """
+        self.api = JudoApi(organization_id=self.organization_id,
+                           storage_key=self.storage_key,
+                           root_url=self.api_url)
 
     def read_judo_file(self, input_file):
+        """read_judo_file
+        """
         try:
             with open(input_file) as json_file:
                 return(json.load(json_file))
-        except:
+        except ValueError:
             return {}
 
-
     def read_input_file(self, input_file):
+        """read_input_file
+        """
         try:
             with open(input_file) as secret:
                 return(b64encode(secret))
-
+        except ValueError:
+            return {}
 
     def write_judo_file(self, outputfile=None):
-        """
+        """write_judo_file
+
+        TODO
         """
         return
-
 
     def create(self, secret_name, shards=5, input=None,
                min_shards=3, input_file=None,
                expiration=0, allowed_ips=None):
-        """_ create secret
+        """create secret
         """
         # define start time
 
         # validate IPs
-        valid_ips = allowed_ips # Todo make this actually validate list
+        valid_ips = allowed_ips  # Todo make this actually validate list
 
         if input and input_file:
             pass
-            ## TODO: throw exception
+            # TODO: throw exception
 
         secret_file_name = ''
         if input:
@@ -143,51 +140,49 @@ class Judo():
             secret_file_name = input_file.rsplit('/')[0]
             secret_type = 2
 
-        judo = aes256gcm(secret)
+        judo = Chop(secret)
 
         # split apart the kek using shamirs
-        shares = judo.chop(self, min_shards, shards):
+        shards = judo.chop(self, min_shards, shards)
 
         # reserve the secret reserveSecret
-        response = self.api.action('CreateSecret',
-            (organizationId=self.organization_id,
-             description=secret_name,
-             numberOfShards=shards,
-             expiresIn=expiration,
-             allowedIPs=valid_ips)
+        response = self.api.action(
+            'CreateSecret', **{
+                'organizationId': self.organization_id,
+                'description': secret_name,
+                'numberOfShards': shards,
+                'expiresIn': expiration,
+                'allowedIPs': valid_ips
+            }
         )
 
-        # fillShards
-        self.api.action('fillShards',
-            (response.secretId,
-             response.urls,
-             judo.string_shares,
-             self.storage_key)
-        )
+        if response:
+            # fillShards
+            self.api.action('fillShards', (response.secretId,
+                                           response.urls,
+                                           judo.string_shares,
+                                           self.storage_key))
 
-        # fulfillSecret
-        self.api.action('fulfillSecret',
-            (response.secretId,
-             self.storage_key)
-        )
+            # fulfillSecret
+            self.api.action('fulfillSecret', (response.secretId,
+                                              self.storage_key))
 
-        # write file to specified path
-        self.write_judo_file(JudoFile({
-            'version':1,
-            'type':secret_type,
-            'filename':secret_file_name,
-            'name':secret_name,
-            'secret_id':response.secretId,
-            'index':response.urls,
-            'n':shards,
-            'm':min_shards,
-            'wrapped_key':judo.encryped_dek,
-            'data':judo.encryped_data
-        }))
+            # write file to specified path
+            self.write_judo_file(JudoFile({
+                'version': 1,
+                'type': secret_type,
+                'filename': secret_file_name,
+                'name': secret_name,
+                'secret_id': response.secretId,
+                'index': response.urls,
+                'n': shards,
+                'm': min_shards,
+                'wrapped_key': judo.encryped_dek,
+                'data': judo.encryped_data
+            }))
 
         # log the time taken
-        # # TODO: finish timing
-
+        # # TODO: finish time logging
 
     def delete(self, input_file):
         """delete
@@ -195,8 +190,7 @@ class Judo():
         judo_file = self.read_judo_file(input_file)
 
         # fulfillSecret
-        self.api.action('DeleteSecret',(secretId=judo_file['secretId']))
-
+        self.api.action('DeleteSecret', **{'secretId': judo_file['secretId']})
 
     def expire(self, input_file):
         """expire
@@ -204,25 +198,27 @@ class Judo():
         judo_file = self.read_judo_file(input_file)
 
         # fulfillSecret
-        self.api.action('ExpireSecret',(secretId=judo_file['secretId']))
-
+        self.api.action('ExpireSecret', **{'secretId': judo_file['secretId']})
 
     def read(self, input_file, force=False):
         """expire
         """
         judo_file = self.read_judo_file(input_file)
+        outputFile = judo_file['filename']
+        secretType = judo_file['type']
 
-        outputFile = judo_file['filename'];
-        secretType = judo_file['type'];
+        shards = self.api.action('ExpireSecret', **{
+            'secretId': judo_file['secretId'],
+            'shardId': judo_file['secretId'],
+            'transactionId': judo_file['secretId']
+        })
 
-        shards = self.api.action('ExpireSecret',
-            (secretId=judo_file['secretId'],
-             shardId=judo_file['secretId'],
-             transactionId=judo_file['secretId'])
-        )
+        # Recombine the shards to create the kek
+        print(judo_file)
+        print(outputFile)
+        print(secretType)
+        print(shards)
 
-          # Recombine the shards to create the kek
+        # decrypt the dek uysing the recombined kek
 
-          # decrypt the dek uysing the recombined kek
-
-          # decrypt the data using the dek
+        # decrypt the data using the dek

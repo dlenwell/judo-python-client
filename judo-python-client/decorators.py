@@ -14,22 +14,54 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 import logging
-from functools import wraps
-
+import ipaddress
 import status
 from httpx import exceptions
-
-from .exceptions import AuthError, ClientConnectionError, ClientError, NotFoundError, ServerError
+from functools import wraps
+from .exceptions import (
+    AuthError, ClientConnectionError, ClientError, NotFoundError, ServerError
+)
 
 logger = logging.getLogger(__name__)
 
 
+def validate_ip_list(ip_list):
+    """validate_ip_list
+    """
+    invalid_list = []
+
+    for canidate in ip_list:
+        if not validate_ip(canidate):
+            invalid_list.append(canidate)
+
+    if len(invalid_list):
+        return(False, invalid_list)
+
+    return(True, invalid_list)
+
+
+def validate_ip(ip):
+    """validate_ip
+    """
+    try:
+        ip = ipaddress.ip_address(ip)
+    except ValueError:
+        return(False)
+
+    return(True)
+
+
 def validate_response(response):
+    """validate_response
+    """
     error_suffix = " response={!r}".format(response)
-    if response.status_code in (status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN):
+    if response.status_code in (status.HTTP_401_UNAUTHORIZED,
+                                status.HTTP_403_FORBIDDEN):
         raise AuthError("operation=auth_error," + error_suffix, response)
     if response.status_code == status.HTTP_404_NOT_FOUND:
-        raise NotFoundError("operation=not_found_error," + error_suffix, response)
+        raise NotFoundError(
+            "operation=not_found_error," + error_suffix, response
+        )
     if status.is_client_error(code=response.status_code):
         raise ClientError("operation=client_error," + error_suffix, response)
     if status.is_server_error(code=response.status_code):
@@ -50,7 +82,7 @@ def validate_input(f):
         return response
 
     return wrapper
-    
+
 
 def handle_request_error(f):
     @wraps(f)

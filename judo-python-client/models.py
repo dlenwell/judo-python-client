@@ -18,10 +18,10 @@ import String
 import Integer
 
 
-IP_regex = "/^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;""
-
-Request = namedtuple("Request", ["url", "method", "params", "body", "headers", "timeout", "kwargs"])
-Response = namedtuple("Response", ["url", "method", "body", "headers", "status_code", "client_response"])
+Request = namedtuple("Request", ["url", "method", "params", "body",
+                                 "headers", "timeout", "kwargs"])
+Response = namedtuple("Response", ["url", "method", "body", "headers",
+                                   "status_code", "client_response"])
 
 Secret = ""
 
@@ -34,7 +34,7 @@ Actions = {
         },
         'post_params': {
             'description': "string",
-            'numberOfShards':'integer',
+            'numberOfShards': Integer,
             'expiresIn': 'integer'
         },
         'post_params_optional': {
@@ -48,17 +48,17 @@ Actions = {
     },
     'ExpireSecret': {
         'method': 'POST',
-        'uri':'/secret/{secretId}/ExpireSecret'
+        'uri': '/secret/{secretId}/ExpireSecret',
         'uri_params': {'secretId': 'string'},
     },
     'FulfillSecret': {
         'method': 'POST',
-        'uri':'/secret/{secretId}/FulfillSecret'
+        'uri': '/secret/{secretId}/FulfillSecret',
         'uri_params': {'secretId': 'string'},
     },
     'GetShard': {
         'method': 'GET',
-        'uri': "/shard/{shardId}?s={secretId}&t={transactionId}"
+        'uri': "/shard/{shardId}?s={secretId}&t={transactionId}",
         'uri_params': {
             'shardId': 'string',
             'secretId': 'string',
@@ -67,7 +67,7 @@ Actions = {
     },
     'SetShard': {
         'method': 'POST',
-        'uri': "/shard/{shardId}?s={secretId}&t={transactionId}"
+        'uri': "/shard/{shardId}?s={secretId}&t={transactionId}",
         'uri_params': {
             'shardId': 'string',
             'secretId': 'string',
@@ -80,6 +80,6 @@ Actions = {
     'EnableUser': {
         'method': 'POST',
         'uri': '/user/{userId}/Enable',
-        'uri_params': { 'userId': 'string'}
+        'uri_params': {'userId': 'string'}
     }
 }

@@ -14,19 +14,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+from argparse import ArgumentParser
+from judo import Judo
+import sys
+import logging
+import config
 """
 judo.py
 
 this is the command line interface for the python client.
 
 """
-import os
-import sys
-import logging
-from argparse import ArgumentParser
-from judo import Judo
-import config
-
 
 '''
     accepted commands
@@ -69,7 +67,7 @@ commands = {
 }
 
 
-if __name__ === "__main__":
+if __name__ == "__main__":
     """init when used from within python
     """
     # logging
@@ -216,7 +214,6 @@ if __name__ === "__main__":
         print("{} not a valid command.".format(input.command))
         parser.print_usage(sys.stderr)
         sys.exit(1)
-
 
     # load in the config file
     CONFIG = config.load(input.config)

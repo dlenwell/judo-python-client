@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Copyright 2020 David Lenwell, Judo Security inc
 
@@ -14,6 +13,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+import logging
+from .exceptions import ActionNotFound, ActionURLMatchError, MissingParams
+from .models import Request, Methods
+from .request import make_request
 """
 judo.py
 
@@ -30,15 +33,6 @@ Field	Type	Description
 secretId	String
 Secret Id.
 """
-import logging
-import httpx
-
-from types import MethodType
-
-from .exceptions import ActionNotFound, ActionURLMatchError, MissingParams
-from .models import Request, Methods
-from .request import make_async_request, make_request
-
 logger = logging.getLogger(__name__)
 
 
@@ -104,7 +98,6 @@ class JudoApi():
     def params(self, value):
         self._params = value
 
-
     def __init__(self, organization_id, storage_key, root_url):
         """
         """
@@ -112,16 +105,15 @@ class JudoApi():
         self._storage_key = storage_key
         self._api_url = root_url
 
-
     def request_url(self, action, **kwargs):
         """
-        
+
         """
         try:
             return(action['uri'].format(**kwargs))
         except IndexError:
             missing = []
-            for param, type in action['uri_params'].items();
+            for param, type in action['uri_params'].items():
                 if 'errormessage' not in kwargs:
                     missing.append('param')
 
@@ -130,18 +122,16 @@ class JudoApi():
                 missing
             )
 
-        return url
-
+        return kwargs.get('url')
 
     def get_action(self, action_name):
         """
 
         """
         try:
-            return Methods[method]
+            return Methods[action_name]
         except KeyError:
-            raise ActionNotFound('method "{}" not found'.format(method))
-
+            raise ActionNotFound('method "{}" not found'.format(action_name))
 
     def set_params(self, action, **kwargs):
         """
@@ -152,7 +142,7 @@ class JudoApi():
 
         for param, type in action['post_params']:
             if param not in kwargs:
-                missing.append(key)
+                missing.append(param)
             else:
                 to_return['param'] = kwargs.get(param)
 
@@ -166,12 +156,11 @@ class JudoApi():
         else:
             return(to_return)
 
-
     def action(self, action_name, **kwargs):
         """
 
         """
-        self.params = self.set_params(action, **kwargs)
+        self.params = self.set_params(action_name, **kwargs)
         action = self.get_action(action_name)
 
         request = Request(

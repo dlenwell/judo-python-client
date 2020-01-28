@@ -13,26 +13,30 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-import json
-from decorators import validate_input
+from Crypto.Cipher import AES
+
+
 """
-functions and template for creating a judo file
+aes256 gcm mode encrypt and decrypt wrapper
+
 """
 
 
-@validate_input()
-def judofile(created, version, type, name,
-             secret_id, index, n, m, wrapped_key, data):
+def encrypt(self, data, key):
+    """encrypt
+    """
+    cipher = AES.new(key, AES.MODE_GCM)
+    cipherdata, tag = cipher.encrypt_and_digest(data)
+    # tag len : 16bytes
+    return cipher.nonce + tag + cipherdata
 
-    return json.dumps({
-        "created": created,
-        "version": version,
-        "type": type,
-        "name": name,
-        "secret_id": secret_id,
-        "index": index,
-        "n": n,
-        "m": m,
-        "wrapped_key": wrapped_key,
-        "data": data
-    })
+
+def decrypt(self, data, key):
+    """decrypt
+    """
+    cipher = AES.new(key, AES.MODE_GCM, data[:16])
+    try:
+        phaindata = cipher.decrypt_and_verify(data[32:], data[16:32])
+        return phaindata
+    except ValueError:
+        raise

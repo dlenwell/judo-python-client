@@ -56,7 +56,8 @@ def make_request(client, request):
         status_code=client_response.status_code,
         client_response=client_response,
     )
-    logger.debug("operation=request_finished, request=%r, response=%r", request, response)
+    logger.debug("operation=request_finished, request=%r, response=%r",
+                 request, response)
     return response
 
 
@@ -95,5 +96,6 @@ async def make_async_request(client, request):
         status_code=client_response.status_code,
         client_response=client_response,
     )
-    logger.debug("operation=request_finished, request=%r, response=%r", request, response)
+    logger.debug("operation=request_finished, request=%r, response=%r",
+                 request, response)
     return response
