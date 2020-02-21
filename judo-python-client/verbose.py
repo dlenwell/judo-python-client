@@ -15,6 +15,7 @@ limitations under the License.
 """
 from pprint import pprint
 
+
 def verbose(message, input=None):
     """ very simply wraps pprint and only outputs if -v was inputted
     """

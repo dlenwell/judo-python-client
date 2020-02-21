@@ -36,6 +36,7 @@ def expire(judo, input):
 
     judo.expire(input.command_arg)
 
+
 def delete(judo, input):
     """wrapper for judo class read function.
     """
@@ -43,6 +44,7 @@ def delete(judo, input):
     verbose("judo file: {}".format(input.command_arg), input.verbose)
 
     judo.delete(input.command_arg)
+
 
 def create(judo, input):
     """wrapper for judo class read function.
@@ -71,7 +73,6 @@ def create(judo, input):
         print("You must specify --quorum <value> or -m <value>")
         sys.exit(1)
 
-
     if input.expires:
         verbose("expiration: {}".format(input.expires), input.verbose)
 
@@ -88,6 +89,7 @@ def create(judo, input):
         allowed_ips=input.ip
     )
 
+
 def read(judo, input):
     """wrapper for judo class read function.
     """
@@ -96,6 +98,7 @@ def read(judo, input):
     verbose("judo file: {}".format(input.command_arg), input.verbose)
 
     judo.read(input.command_arg, input.force)
+
 
 """
     accepted commands
