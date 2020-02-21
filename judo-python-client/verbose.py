@@ -13,24 +13,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-import json
-"""
-functions and template for creating a judo file
-"""
+from pprint import pprint
 
-
-def JudoFile(created, version, type, name,
-             secret_id, index, n, m, wrapped_key, data):
-
-    return json.dumps({
-        "created": created,
-        "version": version,
-        "type": type,
-        "name": name,
-        "secret_id": secret_id,
-        "index": index,
-        "n": n,
-        "m": m,
-        "wrapped_key": wrapped_key,
-        "data": data
-    })
+def verbose(message, input=None):
+    """ very simply wraps pprint and only outputs if -v was inputted
+    """
+    if input:
+        pprint(message)

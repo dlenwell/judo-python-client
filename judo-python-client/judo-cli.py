@@ -16,6 +16,7 @@ limitations under the License.
 """
 from argparse import ArgumentParser
 from judo import Judo
+from verbose import verbose
 import sys
 import logging
 import config
@@ -26,39 +27,79 @@ this is the command line interface for the python client.
 
 """
 
-'''
-    accepted commands
-'''
-
 
 def expire(judo, input):
+    """wrapper for judo class read function.
     """
-    """
-    print(input.command)
-    print(input.command_arg)
+    verbose("{} command initiated".format(input.command), input.verbose)
+    verbose("judo file: {}".format(input.command_arg), input.verbose)
 
+    judo.expire(input.command_arg)
 
 def delete(judo, input):
+    """wrapper for judo class read function.
     """
-    """
-    print(input.command)
-    print(input.command_arg)
+    verbose("{} command initiated".format(input.command), input.verbose)
+    verbose("judo file: {}".format(input.command_arg), input.verbose)
 
+    judo.delete(input.command_arg)
 
 def create(judo, input):
+    """wrapper for judo class read function.
     """
-    """
-    print(input.command)
-    print(input.command_arg)
+    verbose("{} command initiated".format(input.command), input.verbose)
+    verbose("secret name: {}".format(input.command_arg), input.verbose)
+    if input.number:
+        verbose("number of shards: {}".format(input.number), input.verbose)
+    else:
+        print("Please specify the number of shards with --number or -n")
+        sys.exit(1)
 
+    if input.input:
+        verbose("secret to encrypt: {}".format(input.input), input.verbose)
+    else:
+        if not input.inputfile:
+            print("No secret provided. specify either --input or --inputfile")
+            sys.exit(1)
+
+    if input.inputfile:
+        verbose("file to encrypt: {}".format(input.inputfile), input.verbose)
+
+    if input.quorum:
+        verbose("quorum: {}".format(input.quorum), input.verbose)
+    else:
+        print("You must specify --quorum <value> or -m <value>")
+        sys.exit(1)
+
+
+    if input.expires:
+        verbose("expiration: {}".format(input.expires), input.verbose)
+
+    if input.ip:
+        verbose("allowed_ips: {}".format(input.ip), input.verbose)
+
+    judo.create(
+        input.command_arg,
+        shards=input.number,
+        input=input.input,
+        min_shards=input.quorum,
+        input_file=input.inputfile,
+        expiration=input.expires,
+        allowed_ips=input.ip
+    )
 
 def read(judo, input):
+    """wrapper for judo class read function.
     """
-    """
-    print(input.command)
-    print(input.command_arg)
+    verbose("{} command initiated".format(input.command), input.verbose)
 
+    verbose("judo file: {}".format(input.command_arg), input.verbose)
 
+    judo.read(input.command_arg, input.force)
+
+"""
+    accepted commands
+"""
 commands = {
     'expire': expire,
     'delete': delete,
@@ -224,5 +265,5 @@ if __name__ == "__main__":
 
     judo = Judo(CONFIG)
 
-    # call the function that is mapped in verbs.t
+    # call the function that is mapped in commands.
     commands[input.command](judo, input)

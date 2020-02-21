@@ -15,8 +15,8 @@ limitations under the License.
 """
 import logging
 
-from .decorators import handle_async_request_error, handle_request_error
-from .models import Response
+from decorators import handle_async_request_error, handle_request_error
+from models import Response
 
 logger = logging.getLogger(__name__)
 

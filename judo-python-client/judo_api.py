@@ -14,9 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 import logging
-from .exceptions import ActionNotFound, ActionURLMatchError, MissingParams
-from .models import Request, Methods
-from .request import make_request
+from exceptions import ActionNotFound, ActionURLMatchError, MissingParams
+from models import Request, Methods
+from request import make_request
 """
 judo.py
 
@@ -39,7 +39,8 @@ logger = logging.getLogger(__name__)
 class JudoApi():
     """api request wrapper
     """
-    params, headers = {}
+    params = {}
+    headers = {}
     timeout = False
 
     """

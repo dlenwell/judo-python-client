@@ -17,14 +17,14 @@ from base64 import b64encode
 from binascii import hexlify
 from encryption import encrypt
 from Crypto.Random import get_random_bytes
-from Crypto.Protocol.secret_sharing import Shamir
+from Crypto.Protocol.SecretSharing import Shamir
 
 
 class Chop:
     """class Chop
     """
-    shares, string_shares = []
-    kek, dek, shares, encryped_dek, encryped_data, kekHex, data = None
+    shares = []
+    string_shares = []
 
     def __init__(self, data):
         """__init__

@@ -15,10 +15,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 import json
+from uuid import uuid4
 from base64 import b64encode
 from judo_api import JudoApi
 from chop import Chop
+from combine import combine
 from judofile import JudoFile
+from urllib import request
+
+
 """
 judo.py
 
@@ -35,34 +40,50 @@ class Judo():
     """
     @property
     def storage_key(self):
+        """
+        """
         return self._storage_key
 
     @storage_key.setter
     def storage_key(self, value):
+        """
+        """
         self._storage_key = value
 
     @property
     def organization_id(self):
+        """
+        """
         return self._organization_id
 
     @organization_id.setter
     def organization_id(self, value):
+        """
+        """
         self._organization_id = value
 
     @property
     def api_url(self):
+        """
+        """
         return self._api_url
 
     @api_url.setter
     def api_url(self, value):
+        """
+        """
         self._api_url = value
 
     @property
     def output_path(self):
+        """
+        """
         return self._output_path
 
     @output_path.setter
     def output_path(self, value):
+        """
+        """
         self._output_path = value
 
     def __init__(self, CONFIG=None, organization_id=None, storage_key=None,
@@ -173,7 +194,7 @@ class Judo():
                 'type': secret_type,
                 'filename': secret_file_name,
                 'name': secret_name,
-                'secret_id': response.secretId,
+                'secretId': response.secretId,
                 'index': response.urls,
                 'n': shards,
                 'm': min_shards,
@@ -200,25 +221,48 @@ class Judo():
         # fulfillSecret
         self.api.action('ExpireSecret', **{'secretId': judo_file['secretId']})
 
+    def get_shards(self, secret_id, urls):
+        """get_shards
+
+        downloads shards and combines them
+        """
+        transaction_id = uuid4()
+        data = []
+
+        for _url in urls:
+            url = "{}?s={}&t={}".format(_url, secret_id, transaction_id)
+
+            get = request.urlopen(
+                url,
+                headers={'Authorization': self.storage_key},
+                method="get"
+            )
+
+            data.append(get.read())
+
+        return(data)
+
     def read(self, input_file, force=False):
-        """expire
+        """read
+
+        reads in a judo file and attempts to decrypt the secret from available
+        shards.
         """
         judo_file = self.read_judo_file(input_file)
-        outputFile = judo_file['filename']
-        secretType = judo_file['type']
+        output_file = judo_file['filename']
+        secret_type = judo_file['type']
+        secret_id = judo_file['secretId']
+        urls = judo_file['index']
 
-        shards = self.api.action('ExpireSecret', **{
-            'secretId': judo_file['secretId'],
-            'shardId': judo_file['secretId'],
-            'transactionId': judo_file['secretId']
-        })
+        # get the shards
+        shards = self.get_shards(secret_id, urls)
 
-        # Recombine the shards to create the kek
-        print(judo_file)
-        print(outputFile)
-        print(secretType)
-        print(shards)
+        # combine magic
+        result, result_string = combine(shards, judo_file)
 
-        # decrypt the dek uysing the recombined kek
-
-        # decrypt the data using the dek
+        if secret_type == 2:
+            file = open(output_file, 'w')
+            file.write(result)
+            file.close()
+        else:
+            print('Decrypted secret: {}'.format(result_string))

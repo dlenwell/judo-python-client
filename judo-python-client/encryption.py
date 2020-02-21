@@ -22,7 +22,7 @@ aes256 gcm mode encrypt and decrypt wrapper
 """
 
 
-def encrypt(self, data, key):
+def encrypt(data, key):
     """encrypt
     """
     cipher = AES.new(key, AES.MODE_GCM)
@@ -31,7 +31,7 @@ def encrypt(self, data, key):
     return cipher.nonce + tag + cipherdata
 
 
-def decrypt(self, data, key):
+def decrypt(data, key):
     """decrypt
     """
     cipher = AES.new(key, AES.MODE_GCM, data[:16])
@@ -39,4 +39,5 @@ def decrypt(self, data, key):
         phaindata = cipher.decrypt_and_verify(data[32:], data[16:32])
         return phaindata
     except ValueError:
+        print("The shares were incorrect")
         raise

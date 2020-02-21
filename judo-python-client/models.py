@@ -14,8 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 from collections import namedtuple
-import String
-import Integer
 
 
 Request = namedtuple("Request", ["url", "method", "params", "body",
@@ -25,16 +23,18 @@ Response = namedtuple("Response", ["url", "method", "body", "headers",
 
 Secret = ""
 
+Methods = {'read': ''}
+
 Actions = {
     'CreateSecret': {
         'method': 'POST',
         'uri': '/organization/{organizationId}/CreateSecret',
         'uri_params': {
-            'organizationId': String,
+            'organizationId': 'String',
         },
         'post_params': {
             'description': "string",
-            'numberOfShards': Integer,
+            'numberOfShards': 'Integer',
             'expiresIn': 'integer'
         },
         'post_params_optional': {

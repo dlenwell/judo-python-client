@@ -18,7 +18,7 @@ import ipaddress
 import status
 from httpx import exceptions
 from functools import wraps
-from .exceptions import (
+from exceptions import (
     AuthError, ClientConnectionError, ClientError, NotFoundError, ServerError
 )
 
